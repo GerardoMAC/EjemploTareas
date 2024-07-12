@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas</title>
+    <link rel="stylesheet" href="/styles.css">
+    
+</head>
+<body>
+    <h1>Crear Tarea</h1>
+    <form action="http://localhost:4000/api/tareas/" method="post">
+        <input type="text" id="id" name="id" placeholder="0" value="0" style="display: none;">
+        <input type="text" id="titulo" name="titulo" placeholder="Título" required>
+        <input type="text" id="descripcion" name="descripcion" placeholder="Descripción" required>
+        <input type="number" id="estado" name="estado" placeholder="Estado" min="0" max="1" step="1" value="1">
+       
+       <button type="submit">Crear</button>
+    </form>
+    <h1>Lista de Tareas</h1>
+    <table id="tasksTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% tasks.forEach(task => { %>
+                <tr>
+                    <td><%= task.id %></td>
+                    <td><%= task.title %></td>
+                    <td><%= task.description %></td>
+                    <td><%= task.status ? 'Completado' : 'Pendiente' %></td>
+                    
+                    <td>
+                        <button class="update" onclick="updateTask(<%= task.id %>)">Actualizar</button>
+                        <button class="delete" onclick="deleteTask(<%= task.id %>)">Eliminar</button>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</body>
+<script>
+    function updateTask(id) {
+        const newTitle = prompt('Nuevo título:');
+        const newDescription = prompt('Nueva descripción:');
+        const newStatus = confirm('¿Completado?');
+
+        if (newTitle !== null && newDescription !== null) {
+            fetch(`/api/tareas/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, titulo: newTitle, descripcion: newDescription, estado: newStatus })
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al eliminar la tarea');
+            }
+            return response.json(); // Convertir la respuesta a JSON
+            })
+            .then(data => {
+                tasks = data.tasks; // Esto depende de cómo esté estructurada la respuesta del servidor
+                location.reload();
+                
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+
+    function deleteTask(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
+        fetch(`http://localhost:4000/api/tareas/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al eliminar la tarea');
+            }
+            
+            return response.json(); // Convertir la respuesta a JSON
+        })
+        .then(data => {
+            
+            tasks = data.tasks; // Esto depende de cómo esté estructurada la respuesta del servidor
+            location.reload();
+             
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
+
+
+</script>
+</html>
